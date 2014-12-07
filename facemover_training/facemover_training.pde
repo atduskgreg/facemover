@@ -12,11 +12,7 @@ import org.opencv.core.Scalar;
 OpenCV opencv;
 Movie video;
 Rectangle[] faces;
-Mat prev;
-
 Flow flow;
-
-boolean flowInitialized = false;
 
 void setup() {
   size(568*2, 320, P2D);
