@@ -31,10 +31,32 @@ void draw() {
   background(0);
   opencv.loadImage(video);
   faces = opencv.detect();
+  if (flowInitialized) {
+    Mat of = opticalFlow();
+    drawOpticalFlow(of);
 
-  opencv.setGray(opticalFlow());
+    if (faces.length > 0) {
+      PVector d = getAverageFlowInRegion(of, faces[0]);
 
-  image(video,0,0);  
+      pushStyle();
+      pushMatrix();
+      translate(opencv.width, 0);
+      stroke(255);
+
+      float x = faces[0].x + faces[0].width/2;
+      float y = faces[0].y + faces[0].height/2;
+      strokeWeight(3);
+
+      line(x, y, x+d.x*100, y+ d.y*100);
+
+      popMatrix();
+      popStyle();
+    }
+  } else {
+    opticalFlow();
+  }
+
+  image(video, 0, 0);  
 
   noFill();
   stroke(0, 255, 0);
@@ -43,9 +65,9 @@ void draw() {
   for (int i = 0; i < faces.length; i++) {
     rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
   }
-  
+
   pushMatrix();
-  translate(opencv.width,0);
+  translate(opencv.width, 0);
   for (int i = 0; i < faces.length; i++) {
     rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
   }
@@ -59,15 +81,20 @@ void drawOpticalFlow(Mat om) {
   strokeWeight(1);
   stroke(255, 0, 0);
   int stepSize = 4;
-  for (int y = 0; y < om.height(); y+=stepSize) {
-    for (int x = 0; x < om.width(); x+=stepSize) {
+  for (int y = 0; y < om.height (); y+=stepSize) {
+    for (int x = 0; x < om.width (); x+=stepSize) {
       line(x, y, x+(float)om.get(y, x)[0], y+(float)om.get(y, x)[1]);
     }
   }
   popStyle();
 }
 
-PVector getTotalFlowInRegion(Mat m, Rectangle rect){
+PVector getAverageFlowInRegion(Mat m, Rectangle rect) {
+  PVector total =  getTotalFlowInRegion(m, rect);
+  return new PVector(total.x/(m.width() * m.height()), total.y/(m.width()*m.height()));
+}
+
+PVector getTotalFlowInRegion(Mat m, Rectangle rect) {
   Mat sub = m.submat(rect.y, rect.y+rect.height, rect.x, rect.x + rect.width);
   Scalar s = Core.sumElems(sub);
   return new PVector((float)s.val[0], (float)s.val[1]);
@@ -105,19 +132,15 @@ Mat opticalFlow() {
     polySigma, 
     flags
       );
-    
+
     pushMatrix();
-    translate(opencv.width,0);
+    translate(opencv.width, 0);
     drawOpticalFlow(next);
     popMatrix();
 
-    ArrayList<Mat> channels = new ArrayList<Mat>();
-    Core.split(next, channels);
-    channels.get(0).convertTo(output, CvType.CV_8UC1);
-
     prev = opencv.getGray().clone();
 
-    return output;
+    return next;
   }
 }
 
