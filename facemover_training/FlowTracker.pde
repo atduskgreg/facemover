@@ -25,6 +25,10 @@ class FlowTracker{
     started = true;
   }
   
+  boolean hasStarted(){
+    return started;
+  }
+  
   void setDimensions(int w, int h){
     width = w;
     height = h;

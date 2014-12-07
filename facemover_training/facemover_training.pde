@@ -14,6 +14,9 @@ Rectangle[] faces;
 Flow flow;
 FlowTracker tracker;
 
+PImage sample;
+
+int numSamples = 0;
 
 void setup() {
   size(568*2, 320, P2D);
@@ -24,6 +27,9 @@ void setup() {
 
   flow = new Flow();
   tracker = new FlowTracker(75,75,flow);
+  tracker.setUpdateRate(50);
+  
+  sample = createImage(75,75, GRAY);
 
   video.loop();
   video.play();
@@ -48,7 +54,19 @@ void draw() {
 
   if (faces.length > 0) {
     tracker.jumpTo(faces[0].x + faces[0].width/2, faces[0].y + faces[0].height/2);
-    tracker.setDimensions(int(faces[0].width * 0.75), int(faces[0].height * 0.75));
+    tracker.setDimensions(int(faces[0].width), int(faces[0].height));
+  } else {
+    if(tracker.hasStarted()){
+      Rectangle region = tracker.getRegion();
+      // save training images
+      // deal with non-square rectangles in edge conditions
+      if(region.width == region.height){
+        sample.resize(region.width,region.height);
+        sample.copy(opencv.getOutput(), region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
+        sample.save("data/training/sample" + numSamples + ".png");
+        numSamples++;
+      }
+    }
   }
 
   image(video, 0, 0);  
