@@ -23,7 +23,7 @@ void setup() {
   opencv.useGray();
 
   flow = new Flow();
-  tracker = new FlowTracker(50,50,flow);
+  tracker = new FlowTracker(75,75,flow);
 
   video.loop();
   video.play();
@@ -47,20 +47,8 @@ void draw() {
   popMatrix();
 
   if (faces.length > 0) {
-    PVector faceFlow = tracker.flow.getAverageFlowInRegion(faces[0].x, faces[0].y, faces[0].width, faces[0].height);
     tracker.jumpTo(faces[0].x + faces[0].width/2, faces[0].y + faces[0].height/2);
-    tracker.setDimensions(int(faces[0].width * 0.5), int(faces[0].height * 0.5));
-
-    pushMatrix();
-    translate(opencv.width, 0);
-    stroke(255);
-    strokeWeight(3);
-
-    float x = faces[0].x + faces[0].width/2;
-    float y = faces[0].y + faces[0].height/2;
-    line(x, y, x+faceFlow.x*100, y+ faceFlow.y*100);
-
-    popMatrix();
+    tracker.setDimensions(int(faces[0].width * 0.75), int(faces[0].height * 0.75));
   }
 
   image(video, 0, 0);  
@@ -86,6 +74,28 @@ void draw() {
   noFill();
   stroke(0,0,255);
   rect(tracker.getRegion().x, tracker.getRegion().y, tracker.getRegion().width, tracker.getRegion().height);
+  
+  pushMatrix();
+  translate(opencv.width,0);
+  fill(0,255,0);
+  noStroke();
+  ellipse(tracker.getPos().x, tracker.getPos().y, 20, 20);
+  noFill();
+  stroke(0,0,255);
+  rect(tracker.getRegion().x, tracker.getRegion().y, tracker.getRegion().width, tracker.getRegion().height);
+  popMatrix();
+  
+  stroke(255);
+  strokeWeight(2);
+  line(tracker.getPos().x, tracker.getPos().y, tracker.getPos().x + tracker.flowDir().x, tracker.getPos().y + tracker.flowDir().y);
+
+  pushMatrix();
+  translate(opencv.width,0);
+  stroke(255);
+  strokeWeight(2);
+  line(tracker.getPos().x, tracker.getPos().y, tracker.getPos().x + tracker.flowDir().x, tracker.getPos().y + tracker.flowDir().y);
+
+  popMatrix();
 }
 
 void mousePressed(){

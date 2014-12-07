@@ -4,12 +4,19 @@ class FlowTracker{
   int height;
   Flow flow;
   boolean started = false;
+  PVector flowDir;
+  int updateRate = 100;
   
   FlowTracker(int width, int height, Flow flow){
     this.width = width;
     this.height = height;
     this.flow = flow;
     pos = new PVector();
+    flowDir = new PVector();
+  }
+  
+  void setUpdateRate(int r){
+    updateRate = r;
   }
   
   void jumpTo(int x, int y){
@@ -21,6 +28,10 @@ class FlowTracker{
   void setDimensions(int w, int h){
     width = w;
     height = h;
+  }
+  
+  PVector flowDir(){
+    return flowDir;
   }
   
   Rectangle regionAroundPoint(float x, float y){
@@ -48,8 +59,8 @@ class FlowTracker{
     
     if(started){
       Rectangle r = regionAroundPoint(pos.x, pos.y);
-      PVector flowDir = flow.getAverageFlowInRegion(r.x, r.y, r.width, r.height);
-      flowDir.mult(125);
+      flowDir = flow.getAverageFlowInRegion(r.x, r.y, r.width, r.height);
+      flowDir.mult(updateRate);
       pos.add(flowDir);
       
       if(pos.x < 0){
