@@ -2,4 +2,4 @@
 
 ### TODO
 
-* implement optical flow in opencv for processing
+* Track path from starting point via flow at that point in series of frames.
