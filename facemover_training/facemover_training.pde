@@ -14,6 +14,8 @@ Movie video;
 Rectangle[] faces;
 Mat prev;
 
+Flow flow;
+
 boolean flowInitialized = false;
 
 void setup() {
@@ -23,6 +25,8 @@ void setup() {
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);
   opencv.useGray();
 
+  flow = new Flow();
+
   video.loop();
   video.play();
 }
@@ -31,29 +35,33 @@ void draw() {
   background(0);
   opencv.loadImage(video);
   faces = opencv.detect();
-  if (flowInitialized) {
-    Mat of = opticalFlow();
-    drawOpticalFlow(of);
 
-    if (faces.length > 0) {
-      PVector d = getAverageFlowInRegion(of, faces[0]);
+  flow.calculateOpticalFlow(opencv.getGray());
+  pushMatrix();
+  translate(opencv.width, 0);
+  pushStyle();
+  noFill();
+  strokeWeight(1);
+  stroke(255, 0, 0);
+  flow.draw();
+  popStyle();
+  popMatrix();
 
-      pushStyle();
-      pushMatrix();
-      translate(opencv.width, 0);
-      stroke(255);
+  if (faces.length > 0) {
+    PVector faceFlow = flow.getAverageFlowInRegion(faces[0].x, faces[0].y, faces[0].width, faces[0].height);
 
-      float x = faces[0].x + faces[0].width/2;
-      float y = faces[0].y + faces[0].height/2;
-      strokeWeight(3);
+    pushStyle();
+    pushMatrix();
+    translate(opencv.width, 0);
+    stroke(255);
+    strokeWeight(3);
 
-      line(x, y, x+d.x*100, y+ d.y*100);
+    float x = faces[0].x + faces[0].width/2;
+    float y = faces[0].y + faces[0].height/2;
+    line(x, y, x+faceFlow.x*100, y+ faceFlow.y*100);
 
-      popMatrix();
-      popStyle();
-    }
-  } else {
-    opticalFlow();
+    popMatrix();
+    popStyle();
   }
 
   image(video, 0, 0);  
@@ -72,76 +80,6 @@ void draw() {
     rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
   }
   popMatrix();
-}
-
-
-// CV_32FC2 mat
-void drawOpticalFlow(Mat om) {
-  pushStyle();
-  strokeWeight(1);
-  stroke(255, 0, 0);
-  int stepSize = 4;
-  for (int y = 0; y < om.height (); y+=stepSize) {
-    for (int x = 0; x < om.width (); x+=stepSize) {
-      line(x, y, x+(float)om.get(y, x)[0], y+(float)om.get(y, x)[1]);
-    }
-  }
-  popStyle();
-}
-
-PVector getAverageFlowInRegion(Mat m, Rectangle rect) {
-  PVector total =  getTotalFlowInRegion(m, rect);
-  return new PVector(total.x/(m.width() * m.height()), total.y/(m.width()*m.height()));
-}
-
-PVector getTotalFlowInRegion(Mat m, Rectangle rect) {
-  Mat sub = m.submat(rect.y, rect.y+rect.height, rect.x, rect.x + rect.width);
-  Scalar s = Core.sumElems(sub);
-  return new PVector((float)s.val[0], (float)s.val[1]);
-}
-
-Mat opticalFlow() {
-  double pyramidScale = 0.5;
-  int nLevels = 4;
-  int windowSize = 8;
-  int nIterations = 2;
-  int polyN = 7;
-  double polySigma = 1.5;
-  int flags = Video.OPTFLOW_FARNEBACK_GAUSSIAN;
-
-  Mat output = opencv.imitate(opencv.getGray());
-
-  if (!flowInitialized) {
-    prev = opencv.getGray().clone();
-    flags = Video.OPTFLOW_USE_INITIAL_FLOW;
-    flowInitialized = true;
-
-    return prev;
-  } else {
-
-    Mat next = new Mat();
-    Video.calcOpticalFlowFarneback(
-    prev, 
-    opencv.getGray(), 
-    next, 
-    pyramidScale, 
-    nLevels, 
-    windowSize, 
-    nIterations, 
-    polyN, 
-    polySigma, 
-    flags
-      );
-
-    pushMatrix();
-    translate(opencv.width, 0);
-    drawOpticalFlow(next);
-    popMatrix();
-
-    prev = opencv.getGray().clone();
-
-    return next;
-  }
 }
 
 void movieEvent(Movie m) {
