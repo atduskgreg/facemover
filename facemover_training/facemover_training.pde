@@ -33,14 +33,15 @@ void draw() {
   faces = opencv.detect();
 
   flow.calculateOpticalFlow(opencv.getGray());
+  
   pushMatrix();
   translate(opencv.width, 0);
-  pushStyle();
   noFill();
   strokeWeight(1);
   stroke(255, 0, 0);
+  
   flow.draw();
-  popStyle();
+  
   popMatrix();
 
   if (faces.length > 0) {
