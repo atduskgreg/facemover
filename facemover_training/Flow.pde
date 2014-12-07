@@ -13,6 +13,14 @@ class Flow {
   Flow() {
     flow = new Mat();
   }
+  
+  int width(){
+    return flow.width();
+  }
+  
+  int height(){
+    return flow.height();
+  }
 
   boolean hasFlow(){
     return hasFlow;
