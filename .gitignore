@@ -1,2 +1,4 @@
 *.mov
 */training/*
+*/train/*
+*/test/*
