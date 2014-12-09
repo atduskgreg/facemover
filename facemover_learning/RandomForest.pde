@@ -1,5 +1,6 @@
 import org.opencv.ml.CvRTParams;
 import org.opencv.ml.CvRTrees;
+import org.opencv.core.TermCriteria;
 
 class RandomForest extends Classifier {  
   CvRTrees forest;

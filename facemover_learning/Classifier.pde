@@ -1,3 +1,6 @@
+import java.util.Arrays;
+
+
 class Classifier {
   PApplet parent;
   ArrayList<Sample> trainingSamples;

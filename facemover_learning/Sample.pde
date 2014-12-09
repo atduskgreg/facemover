@@ -2,6 +2,7 @@ class Sample {
   double[] featureVector;
   int label;
   int recordId;
+  String recordDescription;
 
   Sample(float[] floatVector, int label){    
     this.featureVector = new double[floatVector.length];
@@ -35,6 +36,10 @@ class Sample {
   
   void setRecordId(int recordId){
     this.recordId = recordId;
+  }
+  
+  void setRecordDescription(String recordDescription){
+    this.recordDescription = recordDescription;
   }
   
   int numFeatures(){

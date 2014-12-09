@@ -10,25 +10,77 @@ import org.opencv.core.CvType;
 
 OpenCV opencv;
 HOGDescriptor descriptor;
-Libsvm classifier
+Libsvm classifier;
+
+int nFolds = 4;
 
 PImage before;
 
-void setup(){
+void setup() {
   opencv = new OpenCV(this, 50, 50);
   size(opencv.width, opencv.height*2);
-  
 
+  classifier = new Libsvm(this);
+
+  ArrayList<Sample> samples = loadSamples("train");
+  HashMap<String, Float> result =  crossfold(classifier, nFolds, samples);
+
+  classifier.save("face-hog-model.txt");
+
+  println();
+  println("========CUMULATIVE TRAINING RESULT ("+nFolds+" folds)================");
+  println("accuracy: " + result.get("accuracy"));
+  println("precision: " + result.get("precision"));
+  println("recall: " + result.get("recall"));
+  println("f-measure: " + result.get("fmeasure"));
+
+
+  classifier.reset();
+  
+  ClassificationResult testResult = testOnSet(classifier, loadSamples("test"));
+
+  println();
+  println("========TEST RESULT (================");
+  println("accuracy: " + testResult.getAccuracy());
+  println("precision: " + testResult.getPrecision());
+  println("recall: " + testResult.getRecall());
+  println("f-measure: " + testResult.getFmeasure());
+
+  noLoop();
 }
 
-void draw(){
-  image(opencv.getOutput(), 0,0);
-  image(before, 0, before.height);
+ArrayList<Sample> loadSamples(String folderName) {
+  java.io.File folder = new java.io.File(dataPath(folderName));
+  String[] filenames = folder.list();
+
+  ArrayList<Sample> result = new ArrayList<Sample>();
+
+  PImage img;
+  for (int i = 0; i < filenames.length; i++) {
+    if (filenames[i].equals(".DS_Store")) {
+      continue;
+    }
+
+    println(filenames[i]);
+    String labelString = split(filenames[i], '-')[0];
+    int label = parseInt(labelString);
+    img = loadImage(dataPath(folderName + "/" + filenames[i]));
+    Sample s = new Sample(featuresForImage(img), label);
+    s.setRecordDescription(filenames[i]);
+    result.add(s);
+  }
+
+  return result;
+}
+
+
+void draw() {
+  background(0);
 }
 
 float[] featuresForImage(PImage img) {
-    // resize the images to a consistent size:
-  img.resize(50,50);
+  // resize the images to a consistent size:
+  img.resize(50, 50);
   // load resized image into OpenCV
   opencv.loadImage(img);
 
@@ -50,7 +102,7 @@ float[] featuresForImage(PImage img) {
   return result;
 }
 
-HashMap crossfold(Classifier classifier, int nFolds, Sample[] samples) {
+HashMap crossfold(Classifier classifier, int nFolds, ArrayList<Sample> samples) {
   HashMap<String, Float> result = new HashMap<String, Float>();
   result.put("accuracy", 0.0);
   result.put("precision", 0.0);
@@ -62,17 +114,17 @@ HashMap crossfold(Classifier classifier, int nFolds, Sample[] samples) {
     folds.add(new ArrayList<Sample>());
   }
 
-  for (int i = 0; i < samples.length; i++) {
+  for (int i = 0; i < samples.size (); i++) {
     int fold = (int)random(0, nFolds);
 
-    folds.get(fold).add(samples[i]);
+    folds.get(fold).add(samples.get(i));
   }
 
-  for (int i = 0; i < folds.size(); i++) {
+  for (int i = 0; i < folds.size (); i++) {
     ArrayList<Sample> testing = folds.get(i);
     ArrayList<Sample> training = new ArrayList<Sample>();
 
-    for (int j = 0; j < folds.size(); j++) {
+    for (int j = 0; j < folds.size (); j++) {
       if (j != i) {
         training.addAll(folds.get(j));
       }
@@ -99,18 +151,21 @@ HashMap crossfold(Classifier classifier, int nFolds, Sample[] samples) {
 
 ClassificationResult executeFold(Classifier classifier, ArrayList<Sample> training, ArrayList<Sample> testing) {
 
-  ClassificationResult score = new ClassificationResult();
-
   classifier.reset();
   classifier.addTrainingSamples(training);
   classifier.train();
-  
+
+  return testOnSet(classifier, testing);
+}
+
+ClassificationResult testOnSet(Classifier classifier, ArrayList<Sample> testing) {
+  ClassificationResult score = new ClassificationResult();
+
   for (Sample sample : testing) {
     double prediction = classifier.predict(sample);
     score.addResult((int)prediction == 1, (int)prediction == sample.label);
   }
 
-  println("Accuracy: "+ score.getAccuracy() +" Precision: " + score.getPrecision() + " Recall: " + score.getRecall() + " F-measure: " + score.getFMeasure());
-
   return score;
 }
+

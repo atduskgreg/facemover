@@ -17,11 +17,14 @@ class Libsvm extends Classifier {
   }
   
   void train() {  
-
+    println(trainingSamples.size());
+    println(trainingSamples.get(0).featureVector.length);
+    
     float[][] trainingVectors = new float[trainingSamples.size()][trainingSamples.get(0).featureVector.length];
     int[] labels = new int[trainingSamples.size()];
     
     for(int i = 0; i < trainingSamples.size(); i++){
+      println("training: " + trainingSamples.get(i).recordDescription);
       trainingVectors[i] = doubleToFloat(trainingSamples.get(i).featureVector);
       labels[i] = trainingSamples.get(i).label;
     }
@@ -46,6 +49,7 @@ class Libsvm extends Classifier {
 
   // Use this function to get a prediction, after having trained the algorithm.
   double predict(Sample sample) {
+    println(sample.featureVector.length);
     return classifier.test(doubleToFloat(sample.featureVector));
   }
   

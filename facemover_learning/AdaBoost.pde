@@ -1,6 +1,7 @@
 import org.opencv.ml.CvBoost;
 import org.opencv.ml.CvBoostParams;
 import org.opencv.core.Range;
+import org.opencv.core.Scalar;
 
 class AdaBoost extends Classifier {  
   CvBoost classifier;
