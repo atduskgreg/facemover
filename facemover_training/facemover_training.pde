@@ -18,6 +18,8 @@ PImage sample;
 
 int numSamples = 0;
 
+boolean saveSamples = false;
+
 void setup() {
   size(568*2, 320, P2D);
   video = new Movie(this, "sample1.mov");
@@ -52,11 +54,14 @@ void draw() {
   
   popMatrix();
 
+  boolean faceTracked = false;
+
   if (faces.length > 0) {
+    faceTracked = true;
     tracker.jumpTo(faces[0].x + faces[0].width/2, faces[0].y + faces[0].height/2);
     tracker.setDimensions(int(faces[0].width), int(faces[0].height));
   } else {
-    if(tracker.hasStarted()){
+    if(saveSamples && tracker.hasStarted()){
       Rectangle region = tracker.getRegion();
       // save training images
       // deal with non-square rectangles in edge conditions

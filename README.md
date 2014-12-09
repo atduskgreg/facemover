@@ -22,6 +22,8 @@ With the optical flow implementation in hand, I used it to implement a FlowTrack
 
 The FlowTracker picks up from the center of the last seen face on any frame where the face disappears and tracks based on the optical flow in the video within a square around that point.
 
+You can see video of the FlowTracker augmenting the OpenCV face detection [here](https://vimeo.com/114073283). (The face rectangle is green when OpenCV's haar detection is responsible for it and blue when it's being updated through optical flow. The white line in the middle of the image represents the average flow within the face rectangle at any given point in the video.)
+
 Once the FlowTracker was up and running I used it to capture images from my test video as an initial input to the machine learning module.
 
 Currently, the FlowTracker produces some false positives that should be easily eliminated: it should have a decay rate so if it hasn't seen a face in a while it doesn't just wander into some part of the image. It should also deal better with boundaries of the image.
