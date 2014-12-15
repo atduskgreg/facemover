@@ -15,6 +15,8 @@ Libsvm classifier;
 int nFolds = 4;
 
 PImage before;
+String modelFile = "face-hog-model.txt";
+boolean loadFromFile = false;
 
 void setup() {
   opencv = new OpenCV(this, 50, 50);
@@ -22,29 +24,35 @@ void setup() {
 
   classifier = new Libsvm(this);
 
-  ArrayList<Sample> samples = loadSamples("train");
-  HashMap<String, Float> result =  crossfold(classifier, nFolds, samples);
-
-  classifier.save("face-hog-model.txt");
-
-  println();
-  println("========CUMULATIVE TRAINING RESULT ("+nFolds+" folds)================");
-  println("accuracy: " + result.get("accuracy"));
-  println("precision: " + result.get("precision"));
-  println("recall: " + result.get("recall"));
-  println("f-measure: " + result.get("fmeasure"));
+  if (loadFromFile) {
+    classifier.setNumFeatures(1728);
+    classifier.load(dataPath(modelFile));
+  } else {
 
 
+    ArrayList<Sample> samples = loadSamples("train");
+    HashMap<String, Float> result =  crossfold(classifier, nFolds, samples);
+
+    println();
+    println("========CUMULATIVE TRAINING RESULT ("+nFolds+" folds)================");
+    println("accuracy: " + result.get("accuracy"));
+    println("precision: " + result.get("precision"));
+    println("recall: " + result.get("recall"));
+    println("f-measure: " + result.get("fmeasure"));
+
+    classifier.save(modelFile);
+  }
   classifier.reset();
-  
+  classifier.reset();
+
   ClassificationResult testResult = testOnSet(classifier, loadSamples("test"));
 
   println();
-  println("========TEST RESULT (================");
+  println("========TEST RESULT ================");
   println("accuracy: " + testResult.getAccuracy());
   println("precision: " + testResult.getPrecision());
   println("recall: " + testResult.getRecall());
-  println("f-measure: " + testResult.getFmeasure());
+  println("f-measure: " + testResult.getFMeasure());
 
   noLoop();
 }

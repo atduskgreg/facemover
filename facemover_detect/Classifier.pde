@@ -42,6 +42,7 @@ class Classifier {
     println("here: " + this.numFeatures);
   }
   
+  // using 
   void save(String filename){
     classifier.save(filename);
   }
