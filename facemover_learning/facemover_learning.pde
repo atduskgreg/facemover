@@ -69,7 +69,6 @@ ArrayList<Sample> loadSamples(String folderName) {
       continue;
     }
 
-    println(filenames[i]);
     String labelString = split(filenames[i], '-')[0];
     int label = parseInt(labelString);
     img = loadImage(dataPath(folderName + "/" + filenames[i]));

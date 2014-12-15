@@ -16,11 +16,13 @@ FlowTracker tracker;
 
 PImage sample;
 int numSamples = 0;
-boolean saveSamples = false;
+boolean saveSamples = true;
+
+int minFaceArea = 125*125;
 
 void setup() {
   size(568*2, 320, P2D);
-  video = new Movie(this, "sample3.mov");
+  video = new Movie(this, "sample2.mov");
   opencv = new OpenCV(this, 568, 320);
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);
   opencv.useGray();
@@ -41,8 +43,10 @@ void draw() {
   faces = opencv.detect();
 
   tracker.update(opencv.getGray());
-  
-  println(tracker.getTimeSinceFace());
+
+  //  print("t: " + tracker.getTimeSinceFace());
+  //  print("\td: " + tracker.getMoveSinceFace());
+  //  print("\td/t: " + tracker.getTimeSinceFace()/tracker.getMoveSinceFace());
 
   pushMatrix();
   translate(opencv.width, 0);
@@ -56,16 +60,32 @@ void draw() {
 
   boolean faceTracked = false;
 
+  boolean decayed = false;
+
   if (faces.length > 0) {
+//    println("face area: " + (faces[0].width * faces[0].height));
+  }
+  if (faces.length > 0 && (faces[0].width * faces[0].height > minFaceArea)) {
     faceTracked = true;
     tracker.jumpTo(faces[0].x + faces[0].width/2, faces[0].y + faces[0].height/2);
     tracker.setDimensions(int(faces[0].width), int(faces[0].height));
   } else {
+
+    if (tracker.hasStarted()) {
+      print("t: " + tracker.getTimeSinceFace());
+      print("\td: " + tracker.getMoveSinceFace());
+      println("\t: " + (tracker.getTimeSinceFace() < 1000) + " " + (tracker.getMoveSinceFace() < 35));
+      if((tracker.getTimeSinceFace() > 300) && (tracker.getMoveSinceFace() > 100)){
+        decayed = true;
+      }
+    }
     if (saveSamples && tracker.hasStarted()) {
+
+
       Rectangle region = tracker.getRegion();
       // save training images
       // deal with non-square rectangles in edge conditions
-      if (region.width == region.height) {
+      if (region.width == region.height && !decayed) {
         sample.resize(region.width, region.height);
         sample.copy(opencv.getOutput(), region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
         sample.save("data/training/sample" + numSamples + ".png");
@@ -81,17 +101,24 @@ void draw() {
   strokeWeight(2);
 
   for (int i = 0; i < faces.length; i++) {
-    rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+    if (faces[i].width * faces[i].height > minFaceArea) {
+      rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+    }
   }
 
   pushMatrix();
   translate(opencv.width, 0);
   for (int i = 0; i < faces.length; i++) {
-    rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+    if (faces[i].width * faces[i].height > minFaceArea) {
+      rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+    }
   }
   popMatrix();
 
   fill(0, 255, 0);
+  if(decayed){
+    fill(0,0,255);
+  }
   noStroke();
   ellipse(tracker.getPos().x, tracker.getPos().y, 20, 20);
   if (!faceTracked) {
@@ -110,7 +137,7 @@ void draw() {
     stroke(0, 0, 255);
     rect(tracker.getRegion().x, tracker.getRegion().y, tracker.getRegion().width, tracker.getRegion().height);
   }
-      popMatrix();
+  popMatrix();
 
 
   stroke(255);
