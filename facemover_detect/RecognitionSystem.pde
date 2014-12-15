@@ -16,24 +16,26 @@ class RecognitionSystem {
     this.maxSize = maxSize;
     this.spacing = spacing;
     areas = new RecognitionArea[numAreas];
-    /* 
+    
      // GRID-BASED CONVOLUTION
-     int i = 0; 
-     for(int row = 0; row < numAreas; row++){
-     for(int col = 0; col < numAreas; col++){
-     int rectSize = maxSize;
-     int x = startX + row*spacing;
-     int y = startY + col*spacing;
-     RecognitionArea area = new RecognitionArea(parent, model, numObjectsToRecognize, x, y, rectSize, rectSize);
-     areas[i] = area;
-     i++;
-     }
-     }*/
+//     int i = 0; 
+//     for(int row = 0; row < numAreas; row++){
+//     for(int col = 0; col < numAreas; col++){
+//     int rectSize = maxSize;
+//     int x = startX + row*spacing;
+//     int y = startY + col*spacing;
+//     RecognitionArea area = new RecognitionArea(parent, model, numClasses, x, y, rectSize, rectSize);
+//     areas[i] = area;
+//     i++;
+//     }
+//     }
     // CONCENTRIC CONVOLUTION
     for (int i = 0; i < areas.length; i++) {
-      int rectSize = maxSize - (i*spacing*2);  
+      int rectSize = maxSize - (i*spacing*2); 
+     println(rectSize); 
       int x = startX + i*spacing;
       int y = startY + i*spacing;
+      println(x+","+y);
       RecognitionArea area = new RecognitionArea(parent, model, numClasses, x, y, rectSize, rectSize);
       areas[i] = area;
     }
@@ -42,6 +44,12 @@ class RecognitionSystem {
   void updateSize(int s) {
     for (int i = 0; i < areas.length; i++) {
       areas[i].updateSize(s);
+    }
+  }
+
+  void setSize(int s) {
+    for (int i = 0; i < areas.length; i++) {
+      areas[i].setSize(s);
     }
   }
 
@@ -61,12 +69,11 @@ class RecognitionSystem {
       pushMatrix();
       if (i == int(areas.length/2)) {
         stroke(255, 0, 0);
-        strokeWeight(5);
+        strokeWeight(1);
       } else {
-        noStroke();
+//        noStroke();
         strokeWeight(0.5);
       }
-      //translate(areas[i].area.x, areas[i].area.y);
       areas[i].drawRect();
       popMatrix();
     }
@@ -158,7 +165,7 @@ class RecognitionArea {
 
   double getTopEstimate() {
     Arrays.sort(estimates);
-    return (estimates[2]*estimates[2]);
+    return (estimates[estimates.length-1]*estimates[estimates.length-1]);
   }
 
   double[] getEstimates() {
@@ -175,6 +182,11 @@ class RecognitionArea {
     area.height += s;
   }
 
+  void setSize(int s) {
+    area.width = s;
+    area.height = s;
+  }
+
   void setThreshold(float threshold) {
     this.threshold = threshold;
   }
@@ -184,6 +196,7 @@ class RecognitionArea {
   }
 
   void drawRect() {
+//    println(area.x +","+area.y + " "+ area.width +"x" + area.height);
     rect(area.x, area.y, area.width, area.height);
   }
 
@@ -196,6 +209,7 @@ class RecognitionArea {
     img.resize(50, 50);
     // load resized image into OpenCV
     opencv.loadImage(img);
+    image(opencv.getSnapshot(), 0, 0);
 
     // settings for HoG calculation
     Size winSize = new Size(40, 24);

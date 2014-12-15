@@ -13,11 +13,11 @@ import java.awt.Rectangle;
 
 int recognitionX = 100;
 int recognitionY = 100;
-int recognitionSize = 100;
+int recognitionSize = 228;
 int numClasses = 2;
-String modelFilename = "tv_dog_model.txt";
+String modelFilename = "face-hog-model.txt";
 float recognitionThreshold = 0.60;
-int numAreas = 5;
+int numAreas = 15;
 int spacingBetweenAreas = 5;
 
 Rectangle[] faces;
@@ -28,16 +28,22 @@ Capture video;
 Libsvm classifier;
 RecognitionSystem detector;
 
+OpenCV opencv2;
+
 void setup() {
   size(640/2, 480/2);
   video = new Capture(this, 640/2, 480/2);
   video.start();   
 
-  opencv = new OpenCV(this, video.width, video.height);
-  opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);
+  opencv = new OpenCV(this, 50, 50);
+  
+  opencv2 = new OpenCV(this, video.width, video.height);
+  opencv2.loadCascade(OpenCV.CASCADE_FRONTALFACE);
 
   classifier = new Libsvm(this);
-  classifier.load("face-hog-model.txt");
+  classifier.load(modelFilename);
+  classifier.setNumFeatures(1728);
+  
   detector = new RecognitionSystem(this, classifier, numClasses, recognitionX, recognitionY, numAreas, spacingBetweenAreas, recognitionSize);
   detector.setThreshold(recognitionThreshold);
   
@@ -46,10 +52,10 @@ void setup() {
 
 
 void draw() {
-  opencv.loadImage(video);
-  faces = opencv.detect();
+  opencv2.loadImage(video);
+  faces = opencv2.detect();
 
-  image(opencv.getOutput(), 0, 0);
+  image(video, 0, 0);
   noFill();
   stroke(0, 255, 0);
   strokeWeight(3);
@@ -58,10 +64,12 @@ void draw() {
   }
   
   if(faces.length > 0){
-    detector.setPosition(0, 0);
+    detector.setPosition(faces[0].x, faces[0].y);
+//    println(faces[0].width);
+//    detector.setSize(faces[0].width);
   } else {
     int[] results = detector.test(video);
-    println(results);
+    println(detector.getTopEstimate());
   }
   
   pushStyle();
