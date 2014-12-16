@@ -22,7 +22,7 @@ void draw() {
   image(video, 0, 0); 
 
   if (going) {
-    if (video.time() > video.duration() && !done) {  
+    if (video.time() == video.duration() && !done) {  
       println("done");
       println(states.size() + " states" );
 
