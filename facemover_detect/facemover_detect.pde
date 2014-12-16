@@ -11,7 +11,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.CvType;
 import java.awt.Rectangle;
 
-String movieFilename = "sample4.mov";
+String movieFilename = "sample6.mov";
 
 int recognitionX = 100;
 int recognitionY = 100;
@@ -21,6 +21,8 @@ String modelFilename = "rotating-face-model.txt";
 float recognitionThreshold = 0.60;
 int numAreas = 15;
 int spacingBetweenAreas = 5;
+
+boolean useTracker = true;
 
 Rectangle[] faces;
 OpenCV opencv;
@@ -104,7 +106,8 @@ void draw() {
   detector.draw();
   popStyle();
 
-  if (faces.length == 0 && detector.objectMatched()) {
+  if (useTracker && faces.length == 0 && detector.objectMatched() && detector.getBestMatch() == 1) {
+    println(detector.getBestMatch() +  " "  + detector.getTopEstimate());
     pushStyle();
     noFill();
     strokeWeight(2);
