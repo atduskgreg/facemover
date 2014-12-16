@@ -17,7 +17,7 @@ int recognitionSize = 228;
 int numClasses = 2;
 String modelFilename = "rotating-face-model.txt";
 float recognitionThreshold = 0.60;
-int numAreas = 1;
+int numAreas = 15;
 int spacingBetweenAreas = 5;
 
 Rectangle[] faces;
@@ -64,61 +64,28 @@ void draw() {
   }
   
   if(faces.length > 0){
-    lastFace.x = faces[0].x;
-    lastFace.y = faces[0].y;
-    lastFace.width = faces[0].width;
-    lastFace.height = faces[0].height;
+    detector.setPosition(faces[0].x  +faces[0].width/2 - recognitionSize/2, faces[0].y + faces[0].height/2 - recognitionSize/2);
   }
-  
-  PImage img = createImage(lastFace.width, lastFace.height, RGB);
-  img.copy(video, 0,0, lastFace.width, lastFace.height, 0,0, lastFace.width, lastFace.height);
-  double[] confidence = new double[2];
-  double r = classifier.predict(new Sample(featuresForImage(img)), confidence);
-  println(r + " " + confidence[0] +"/"+ confidence[1]);
-  
-//  if(faces.length > 0){
-//    detector.setPosition(faces[0].x, faces[0].y);
-////    println(faces[0].width);
-//    detector.setSize(faces[0].width);
-//  } //else {
-//    int[] results = detector.test(video);
-//    println(results[0] + " "  + detector.getTopEstimate());
-//  //}
+  else {
+    int[] results = detector.test(video);
+   }
 //  
   pushStyle();
   noFill();
   stroke(255,0,0);
-//  detector.draw();
+  detector.draw();
   popStyle();
   
+  if(faces.length == 0 && detector.objectMatched()){
+    pushStyle();
+    noFill();
+    strokeWeight(2);
+    stroke(0,0,255);
+    detector.getBestArea().drawRect();
+    popStyle();
+  }
   
 }
-
-float[] featuresForImage(PImage img) {
-  // resize the images to a consistent size:
-  img.resize(50, 50);
-  // load resized image into OpenCV
-  opencv.loadImage(img);
-  image(opencv.getSnapshot(), 0,0);
-
-  // settings for HoG calculation
-  Size winSize = new Size(40, 24);
-  Size blockSize = new Size(8, 8);
-  Size blockStride = new Size(16, 16);
-  Size cellSize = new Size(2, 2);
-  int nBins = 9;
-  Size winStride = new Size(16, 16);
-  Size padding = new Size(0, 0);
-
-  HOGDescriptor descriptor = new HOGDescriptor(winSize, blockSize, blockStride, cellSize, nBins);
-
-  MatOfFloat descriptors = new MatOfFloat();
-  MatOfPoint locations = new MatOfPoint();
-  descriptor.compute(opencv.getGray(), descriptors, winStride, padding, locations);
-  float[] result = descriptors.toArray();
-  return result;
-}
-
 
 void captureEvent(Capture c) {
   c.read();

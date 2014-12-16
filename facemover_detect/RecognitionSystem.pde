@@ -32,10 +32,8 @@ class RecognitionSystem {
     // CONCENTRIC CONVOLUTION
     for (int i = 0; i < areas.length; i++) {
       int rectSize = maxSize - (i*spacing*2); 
-     println(rectSize); 
       int x = startX + i*spacing;
       int y = startY + i*spacing;
-      println(x+","+y);
       RecognitionArea area = new RecognitionArea(parent, model, numClasses, x, y, rectSize, rectSize);
       areas[i] = area;
     }
@@ -109,6 +107,10 @@ class RecognitionSystem {
   int getBestMatch() {
     getTopEstimate(); // for side effect of setting indexOfTopEstimate
     return testResults[indexOfTopEstimate];
+  }
+  
+  RecognitionArea getBestArea(){
+    return areas[indexOfTopEstimate];
   }
 
   double getTopEstimate() {
