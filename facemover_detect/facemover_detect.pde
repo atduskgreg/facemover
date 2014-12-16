@@ -21,7 +21,6 @@ int numAreas = 15;
 int spacingBetweenAreas = 5;
 
 Rectangle[] faces;
-Rectangle lastFace;
 OpenCV opencv;
 Movie video;
 Libsvm classifier;
@@ -29,14 +28,22 @@ RecognitionSystem detector;
 
 OpenCV opencv2;
 
+// labeler
+ArrayList<String> states;
+int frameNum = 0;
+boolean done = false;
+boolean going = false;
+PVector lastTrack;
+boolean currentTrack = false;
 
 void setup() {
   size( 568, 320);
   video = new Movie(this, "sample4.mov");
-  video.loop();   
+  video.play();   
+  video.pause();
 
   opencv = new OpenCV(this, 50, 50);
-  
+
   opencv2 = new OpenCV(this, video.width, video.height);
   opencv2.loadCascade(OpenCV.CASCADE_FRONTALFACE);
 
@@ -46,10 +53,24 @@ void setup() {
 
   detector = new RecognitionSystem(this, classifier, numClasses, recognitionX, recognitionY, numAreas, spacingBetweenAreas, recognitionSize);
   detector.setThreshold(recognitionThreshold);
-  
-  lastFace = new Rectangle(0,0, 50, 50);
+
+  states = new ArrayList<String>();
+
+  lastTrack = new PVector();
 }
 
+void checkAndSaveLabels() {
+  if (going) {
+    if (video.time() > video.duration() && !done) {  
+      println("done");
+      println(states.size() + " states" );
+
+      String[] lines = states.toArray(new String[states.size()]);
+      saveStrings(movieFilename + ".csv", lines);
+      done = true;
+    }
+  }
+}
 
 void draw() {
   opencv2.loadImage(video);
@@ -62,36 +83,55 @@ void draw() {
   for (int i = 0; i < faces.length; i++) {
     rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
   }
-  
-  if(faces.length > 0){
+
+  currentTrack = false;
+
+
+  if (faces.length > 0) {
     detector.setPosition(faces[0].x  +faces[0].width/2 - recognitionSize/2, faces[0].y + faces[0].height/2 - recognitionSize/2);
-  }
-  else {
+    lastTrack.x = faces[0].x;
+    lastTrack.y = faces[0].y;
+    currentTrack = true;
+  } else {
     int[] results = detector.test(video);
-   }
-//  
+  }
+  //  
   pushStyle();
   noFill();
-  stroke(255,0,0);
+  stroke(255, 0, 0);
   detector.draw();
   popStyle();
-  
-  if(faces.length == 0 && detector.objectMatched()){
+
+  if (faces.length == 0 && detector.objectMatched()) {
     pushStyle();
     noFill();
     strokeWeight(2);
-    stroke(0,0,255);
+    stroke(0, 0, 255);
     detector.getBestArea().drawRect();
+    Rectangle r = detector.getBestArea().getRect();
+    
+    currentTrack = true;
+    lastTrack.x = r.x + r.width/2;
+    lastTrack.y = r.y + r.height/2;
+    
     popStyle();
   }
-  
+
+  checkAndSaveLabels();
 }
 
-void captureEvent(Capture c) {
-  c.read();
+void keyPressed() {
+  going = true;
+  video.play();
 }
 
 void movieEvent(Movie m) {
   m.read();
+  if (going) {
+    //TODO: set this based on center of tracker box.
+
+    states.add(frameNum + ","+ video.time() +"," +mouseX + "," + mouseY+"," +keyPressed);
+    frameNum++;
+  }
 }
 

@@ -196,6 +196,10 @@ class RecognitionArea {
   float getThreshold() {
     return threshold;
   }
+  
+  Rectangle getRect(){
+    return area;
+  }
 
   void drawRect() {
 //    println(area.x +","+area.y + " "+ area.width +"x" + area.height);
