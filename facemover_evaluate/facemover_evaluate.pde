@@ -1,5 +1,5 @@
-String groundTruthPath = "ground.sample4.mov.csv";
-String testPath = "test.sample4.mov.csv";
+String groundTruthPath = "ground.sample8.mov.csv";
+String testPath = "hybrid.sample8.mov.csv";
 
 Table groundTruth;
 Table testTrack;
@@ -21,10 +21,12 @@ void setup(){
     PVector groundP = new PVector(groundFrame.getInt(2), groundFrame.getInt(3));
     PVector testP = new PVector(testFrame.getInt(2), testFrame.getInt(3));
     
-    totalDistance += PVector.dist(groundP, testP);
-    
     boolean groundB = groundFrame.getString(4).equals("true");
     boolean testB = testFrame.getString(4).equals("true");
+    
+    if(groundB){
+      totalDistance += PVector.dist(groundP, testP);
+    }
     
     if(groundB && !testB){
       falseNegatives++;
