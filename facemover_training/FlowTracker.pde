@@ -5,7 +5,7 @@ class FlowTracker {
   Flow flow;
   boolean started = false;
   PVector flowDir;
-  int updateRate = 100;
+  int updateRate = 80;
   int lastFaceTime;
 
   PVector lastFacePos;

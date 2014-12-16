@@ -1,5 +1,5 @@
-String groundTruthPath = "ground.sample8.mov.csv";
-String testPath = "hybrid.sample8.mov.csv";
+String groundTruthPath = "ground.sample10.mov.csv";
+String testPath = "hybrid.sample10.mov.csv";
 
 Table groundTruth;
 Table testTrack;

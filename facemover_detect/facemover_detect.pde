@@ -11,16 +11,16 @@ import org.opencv.core.Rect;
 import org.opencv.core.CvType;
 import java.awt.Rectangle;
 
-String movieFilename = "sample6.mov";
+String movieFilename = "sample8.mov";
 
 int recognitionX = 100;
 int recognitionY = 100;
-int recognitionSize = 228;
+int recognitionSize = 225;
 int numClasses = 2;
-String modelFilename = "rotating-face-model.txt";
+String modelFilename = "occlusion-face-model.txt";
 float recognitionThreshold = 0.60;
-int numAreas = 15;
-int spacingBetweenAreas = 5;
+int numAreas = 32;
+int spacingBetweenAreas = 3;
 
 boolean useTracker = true;
 

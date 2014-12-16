@@ -22,7 +22,7 @@ int minFaceArea = 125*125;
 
 void setup() {
   size(568*2, 320, P2D);
-  video = new Movie(this, "sample2.mov");
+  video = new Movie(this, "sample5.mov");
   opencv = new OpenCV(this, 568, 320);
   opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE);
   opencv.useGray();
@@ -33,7 +33,6 @@ void setup() {
 
   sample = createImage(75, 75, GRAY);
 
-  video.loop();
   video.play();
 }
 
@@ -73,9 +72,17 @@ void draw() {
       print("t: " + tracker.getTimeSinceFace());
       print("\td: " + tracker.getMoveSinceFace());
       println("\t: " + (tracker.getTimeSinceFace() < 1000) + " " + (tracker.getMoveSinceFace() < 35));
-      if((tracker.getTimeSinceFace() > 300) && (tracker.getMoveSinceFace() > 100)){
+      if ((tracker.getTimeSinceFace() > 300) && (tracker.getMoveSinceFace() > 100)) {
         decayed = true;
       }
+    } else {
+      sample.resize(100, 100);
+
+      int x = (int)random(opencv.width - 100);
+      int y = (int)random(opencv.height - 100);
+
+      sample.copy(opencv.getOutput(), x, y, 100, 100, 0, 0, 100, 100);
+      sample.save("data/training/0-sample-"+(int)random(10000)+".png");
     }
     if (saveSamples && tracker.hasStarted()) {
 
@@ -86,10 +93,21 @@ void draw() {
       if (region.width == region.height && !decayed) {
         sample.resize(region.width, region.height);
         sample.copy(opencv.getOutput(), region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
-        sample.save("data/training/sample" + numSamples + ".png");
+        sample.save("data/training/1-sample-"+(int)random(10000)+".png");
         numSamples++;
       }
     }
+  }
+
+  // if there's no face capture a random negative training example
+  if (faces.length == 0 && decayed) {
+    sample.resize(100, 100);
+
+    int x = (int)random(opencv.width - 100);
+    int y = (int)random(opencv.height - 100);
+
+    sample.copy(opencv.getOutput(), x, y, 100, 100, 0, 0, 100, 100);
+    sample.save("data/training/0-sample-"+(int)random(10000)+".png");
   }
 
   image(video, 0, 0);  
@@ -114,8 +132,8 @@ void draw() {
   popMatrix();
 
   fill(0, 255, 0);
-  if(decayed){
-    fill(0,0,255);
+  if (decayed) {
+    fill(0, 0, 255);
   }
   noStroke();
   ellipse(tracker.getPos().x, tracker.getPos().y, 20, 20);

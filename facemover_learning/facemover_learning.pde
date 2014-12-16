@@ -15,7 +15,7 @@ Libsvm classifier;
 int nFolds = 3;
 
 PImage before;
-String modelFile = "rotating-face-model.txt";
+String modelFile = "hybrid-face-model.txt";
 boolean loadFromFile = false;
 
 void setup() {
