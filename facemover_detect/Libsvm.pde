@@ -41,6 +41,9 @@ class Libsvm extends Classifier {
   }
 
   void load(String filename) {
+    if(numFeatures == 2){
+      println("WARNING: Did you set the number of features before loading the model file?");
+    }
     classifier.loadModel(filename, numFeatures);
   }
 

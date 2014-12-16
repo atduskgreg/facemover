@@ -12,10 +12,10 @@ OpenCV opencv;
 HOGDescriptor descriptor;
 Libsvm classifier;
 
-int nFolds = 4;
+int nFolds = 3;
 
 PImage before;
-String modelFile = "face-hog-model.txt";
+String modelFile = "rotating-face-model.txt";
 boolean loadFromFile = false;
 
 void setup() {
@@ -39,10 +39,13 @@ void setup() {
     println("precision: " + result.get("precision"));
     println("recall: " + result.get("recall"));
     println("f-measure: " + result.get("fmeasure"));
+    println("false positives: " + result.get("false positives"));
+    println("false negatives: " + result.get("false negatives"));
 
+    println("saving classifier...");
     classifier.save(modelFile);
+    println("saved");
   }
-  classifier.reset();
   classifier.reset();
 
   ClassificationResult testResult = testOnSet(classifier, loadSamples("test"));
@@ -53,6 +56,8 @@ void setup() {
   println("precision: " + testResult.getPrecision());
   println("recall: " + testResult.getRecall());
   println("f-measure: " + testResult.getFMeasure());
+  println("false positives: " + testResult.numFalsePositives());
+  println("false negatives: " + testResult.numFalseNegatives());
 
   noLoop();
 }
@@ -115,6 +120,8 @@ HashMap crossfold(Classifier classifier, int nFolds, ArrayList<Sample> samples) 
   result.put("precision", 0.0);
   result.put("recall", 0.0);
   result.put("fmeasure", 0.0);
+  result.put("false positives", 0.0);
+  result.put("false negatives", 0.0);
 
   ArrayList<ArrayList<Sample>> folds = new ArrayList<ArrayList<Sample>>();
   for (int i = 0; i < nFolds; i++) {
@@ -146,12 +153,16 @@ HashMap crossfold(Classifier classifier, int nFolds, ArrayList<Sample> samples) 
     result.put("precision", result.get("precision") + score.getPrecision());
     result.put("recall", result.get("recall") + score.getRecall());
     result.put("fmeasure", result.get("fmeasure") + score.getFMeasure());
+    result.put("false positives", result.get("false positives") + score.numFalsePositives());
+    result.put("false negatives", result.get("false positives") + score.numFalseNegatives());
   }
 
   result.put("accuracy", result.get("accuracy")/nFolds);
   result.put("precision", result.get("precision")/nFolds);
   result.put("recall", result.get("recall")/nFolds);
   result.put("fmeasure", result.get("fmeasure")/nFolds);
+  result.put("false positives", result.get("false positives")/nFolds);
+  result.put("false negatives", result.get("false negatives")/nFolds);
 
   return result;
 }

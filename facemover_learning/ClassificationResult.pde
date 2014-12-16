@@ -22,6 +22,18 @@ class ClassificationResult {
     }
   }
   
+  int numFalsePositives(){
+    return falsePositive;
+  }
+  
+  int numFalseNegatives(){
+    return falseNegative;
+  }
+  
+  int getTotalIncorrect(){
+    return numFalseNegatives() + numFalsePositives();
+  }
+  
   float getAccuracy(){
     return (float)(truePositive + trueNegative)/(truePositive + trueNegative + falsePositive + falseNegative);
   }

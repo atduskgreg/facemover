@@ -62,9 +62,7 @@ void draw() {
 
   boolean decayed = false;
 
-  if (faces.length > 0) {
-//    println("face area: " + (faces[0].width * faces[0].height));
-  }
+
   if (faces.length > 0 && (faces[0].width * faces[0].height > minFaceArea)) {
     faceTracked = true;
     tracker.jumpTo(faces[0].x + faces[0].width/2, faces[0].y + faces[0].height/2);

@@ -15,25 +15,25 @@ int recognitionX = 100;
 int recognitionY = 100;
 int recognitionSize = 228;
 int numClasses = 2;
-String modelFilename = "face-hog-model.txt";
+String modelFilename = "rotating-face-model.txt";
 float recognitionThreshold = 0.60;
-int numAreas = 15;
+int numAreas = 1;
 int spacingBetweenAreas = 5;
 
 Rectangle[] faces;
-PVector lastFacePos;
-
+Rectangle lastFace;
 OpenCV opencv;
-Capture video;
+Movie video;
 Libsvm classifier;
 RecognitionSystem detector;
 
 OpenCV opencv2;
 
+
 void setup() {
-  size(640/2, 480/2);
-  video = new Capture(this, 640/2, 480/2);
-  video.start();   
+  size( 568, 320);
+  video = new Movie(this, "sample4.mov");
+  video.loop();   
 
   opencv = new OpenCV(this, 50, 50);
   
@@ -41,13 +41,13 @@ void setup() {
   opencv2.loadCascade(OpenCV.CASCADE_FRONTALFACE);
 
   classifier = new Libsvm(this);
+  classifier.setNumFeatures(1728); // !important this has to be before loading
   classifier.load(modelFilename);
-  classifier.setNumFeatures(1728);
-  
+
   detector = new RecognitionSystem(this, classifier, numClasses, recognitionX, recognitionY, numAreas, spacingBetweenAreas, recognitionSize);
   detector.setThreshold(recognitionThreshold);
   
-  lastFacePos = new PVector();
+  lastFace = new Rectangle(0,0, 50, 50);
 }
 
 
@@ -64,26 +64,67 @@ void draw() {
   }
   
   if(faces.length > 0){
-    detector.setPosition(faces[0].x, faces[0].y);
-//    println(faces[0].width);
-//    detector.setSize(faces[0].width);
-  } else {
-    int[] results = detector.test(video);
-    println(detector.getTopEstimate());
+    lastFace.x = faces[0].x;
+    lastFace.y = faces[0].y;
+    lastFace.width = faces[0].width;
+    lastFace.height = faces[0].height;
   }
   
+  PImage img = createImage(lastFace.width, lastFace.height, RGB);
+  img.copy(video, 0,0, lastFace.width, lastFace.height, 0,0, lastFace.width, lastFace.height);
+  double[] confidence = new double[2];
+  double r = classifier.predict(new Sample(featuresForImage(img)), confidence);
+  println(r + " " + confidence[0] +"/"+ confidence[1]);
+  
+//  if(faces.length > 0){
+//    detector.setPosition(faces[0].x, faces[0].y);
+////    println(faces[0].width);
+//    detector.setSize(faces[0].width);
+//  } //else {
+//    int[] results = detector.test(video);
+//    println(results[0] + " "  + detector.getTopEstimate());
+//  //}
+//  
   pushStyle();
   noFill();
   stroke(255,0,0);
-  detector.draw();
+//  detector.draw();
   popStyle();
   
   
 }
 
+float[] featuresForImage(PImage img) {
+  // resize the images to a consistent size:
+  img.resize(50, 50);
+  // load resized image into OpenCV
+  opencv.loadImage(img);
+  image(opencv.getSnapshot(), 0,0);
+
+  // settings for HoG calculation
+  Size winSize = new Size(40, 24);
+  Size blockSize = new Size(8, 8);
+  Size blockStride = new Size(16, 16);
+  Size cellSize = new Size(2, 2);
+  int nBins = 9;
+  Size winStride = new Size(16, 16);
+  Size padding = new Size(0, 0);
+
+  HOGDescriptor descriptor = new HOGDescriptor(winSize, blockSize, blockStride, cellSize, nBins);
+
+  MatOfFloat descriptors = new MatOfFloat();
+  MatOfPoint locations = new MatOfPoint();
+  descriptor.compute(opencv.getGray(), descriptors, winStride, padding, locations);
+  float[] result = descriptors.toArray();
+  return result;
+}
 
 
 void captureEvent(Capture c) {
   c.read();
+}
+
+void movieEvent(Movie m) {
+  m.read();
 }
 
