@@ -11,6 +11,8 @@ import org.opencv.core.Rect;
 import org.opencv.core.CvType;
 import java.awt.Rectangle;
 
+String movieFilename = "sample4.mov";
+
 int recognitionX = 100;
 int recognitionY = 100;
 int recognitionSize = 228;
@@ -38,7 +40,7 @@ boolean currentTrack = false;
 
 void setup() {
   size( 568, 320);
-  video = new Movie(this, "sample4.mov");
+  video = new Movie(this, movieFilename);
   video.play();   
   video.pause();
 
@@ -61,7 +63,7 @@ void setup() {
 
 void checkAndSaveLabels() {
   if (going) {
-    if (video.time() > video.duration() && !done) {  
+    if (video.time() >= video.duration() && !done) {  
       println("done");
       println(states.size() + " states" );
 
@@ -130,7 +132,7 @@ void movieEvent(Movie m) {
   if (going) {
     //TODO: set this based on center of tracker box.
 
-    states.add(frameNum + ","+ video.time() +"," +mouseX + "," + mouseY+"," +keyPressed);
+    states.add(frameNum + ","+ video.time() +"," +lastTrack.x + "," + lastTrack.y+"," +currentTrack);
     frameNum++;
   }
 }
